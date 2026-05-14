@@ -1,20 +1,28 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Farcaster Drift
 
-# Run and deploy your AI Studio app
+**Farcaster Drift** is a high-speed cyberpunk endless racing / drifting game set in the Farcaster universe. You are a **Cast Racer** who races through neon-lit digital cities, floating warp tracks, and viral feed highways. Master drifting, timing, and power-ups to achieve the highest score and become the ultimate Farcaster legend.
 
-This contains everything you need to run your app locally.
+## Features (Mobile First)
 
-View your app in AI Studio: https://ai.studio/apps/9e625808-ad04-4154-851b-4db6ff7722bb
+- **Mechanics:** Smooth touch-based drifting controls (swipe to steer, hold for drift). Fast-paced endless runner/racer style with increasing speed.
+- **Hype Meter:** Drift around corners to build your Hype Meter and score multipliers.
+- **On-chain Integration:** Uses Base Mainnet for score submissions. Real transactional capabilities with SIWE.
+- **ERC-8004 AI Agent Integration:** Includes an autonomous `Farcast Drift Orchestrator` AI agent to handle multi-cast logic and in-game interactions.
+- **ERC-8021 Transaction Attribution:** Supports transaction attribution for builders.
 
-## Run Locally
+## ⚠️ Important Note regarding Sensitive Data
 
-**Prerequisites:**  Node.js
+This repository contains integration logic meant for demonstration and preview purposes within Google AI Studio. 
 
+**Do NOT commit real or active private keys, seed phrases, or active API keys to this repository.** Make sure to use environment variables (`.env`) for any sensitive secrets, and only add templates to `.env.example`.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## File Structure & Agent Components
+The game has built-in smart orchestration handled securely over a backend proxy (`server.ts`):
+- `public/.well-known/agent-card.json`: Registers the AI Agent under ERC-8004 standards.
+- `server.ts`: Includes an **MCP (Model Context Protocol)** active command execution API (`/api/mcp`) and an orchestrator profile API (`/api/agent`).
+
+## Tech Stack
+- Frontend: React 19, Tailwind CSS v4, HTML5 Canvas, Framer Motion
+- Backend: Express, Vite Middleware
+- APIs: Wagmi, Viem (Simulated on UI, prepped for integration)
+- Blockchain: **Base Mainnet**
