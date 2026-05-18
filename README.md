@@ -1,28 +1,38 @@
-# Farcaster Drift
+# Farcast Drift Orchestrator
 
-**Farcaster Drift** is a high-speed cyberpunk endless racing / drifting game set in the Farcaster universe. You are a **Cast Racer** who races through neon-lit digital cities, floating warp tracks, and viral feed highways. Master drifting, timing, and power-ups to achieve the highest score and become the ultimate Farcaster legend.
+## Overview
+**Farcast Drift** is a high-speed cyberpunk endless racing and drifting game set in the Farcaster universe. Players act as **Cast Racers** competing in neon-lit digital cities, warp tracks, and viral feed highways. The game features real-time orchestration, competitive mechanics, and a fully compliant EIP-8004 AI Agent.
 
-## Features (Mobile First)
+## Architecture
+- **Platform:** Base Mainnet
+- **Orchestrator:** AI Agent powered by MCP (Model Context Protocol).
+- **Frontend Engine:** Responsive, touch-optimized Canvas, React 19, Tailwind CSS v4.
+- **Smart Validation:** Secure SIWE transaction submission endpoints.
 
-- **Mechanics:** Smooth touch-based drifting controls (swipe to steer, hold for drift). Fast-paced endless runner/racer style with increasing speed.
-- **Hype Meter:** Drift around corners to build your Hype Meter and score multipliers.
-- **On-chain Integration:** Uses Base Mainnet for score submissions. Real transactional capabilities with SIWE.
-- **ERC-8004 AI Agent Integration:** Includes an autonomous `Farcast Drift Orchestrator` AI agent to handle multi-cast logic and in-game interactions.
-- **ERC-8021 Transaction Attribution:** Supports transaction attribution for builders.
+## Agent Integration (EIP-8004)
+The game integrates an autonomous **Farcast Drift Orchestrator**, coordinating operations via an active agent endpoint.
+- `warp-racing`: Real-time mechanics optimization.
+- `multi-track-orchestration`: Simultaneously tracking racing environments.
+- `performance-optimization`: Live parameter tuning for racers.
 
-## ⚠️ Important Note regarding Sensitive Data
+### Agent Registry File
+The agent metadata is hosted at `.well-known/agent-card.json`. This conforms strictly to the EIP-8004 registration configuration.
 
-This repository contains integration logic meant for demonstration and preview purposes within Google AI Studio. 
+## Model Context Protocol (MCP) Setup
+The AI Agent exposes an active MCP endpoint to execute tools and orchestrate interactions seamlessly:
+- **Endpoint:** `/api/mcp`
+- **Registered Tools:**
+  - `get_race_status`: Get the current real-time status of a race.
+  - `start_race`: Start a new race on a given track.
+  - `get_leaderboard`: Fetch the top competitive racers.
+  - `optimize_speed`: Engage deep performance tuning profiles.
+  - `get_track_info`: Query condition data for specific grids.
 
-**Do NOT commit real or active private keys, seed phrases, or active API keys to this repository.** Make sure to use environment variables (`.env`) for any sensitive secrets, and only add templates to `.env.example`.
+## Getting Started Locally
+1. Clone this repository.
+2. Install dependencies: `npm install`
+3. Configure your local runtime environment (copy `.env.example` -> `.env`)
+4. Start the development server: `npm run dev`
+5. Access the Farcaster App at localhost.
 
-## File Structure & Agent Components
-The game has built-in smart orchestration handled securely over a backend proxy (`server.ts`):
-- `public/.well-known/agent-card.json`: Registers the AI Agent under ERC-8004 standards.
-- `server.ts`: Includes an **MCP (Model Context Protocol)** active command execution API (`/api/mcp`) and an orchestrator profile API (`/api/agent`).
-
-## Tech Stack
-- Frontend: React 19, Tailwind CSS v4, HTML5 Canvas, Framer Motion
-- Backend: Express, Vite Middleware
-- APIs: Wagmi, Viem (Simulated on UI, prepped for integration)
-- Blockchain: **Base Mainnet**
+*(Note: Never commit sensitive details, wallet keys, or API credentials to version control. Use standard environment variable practices.)*
