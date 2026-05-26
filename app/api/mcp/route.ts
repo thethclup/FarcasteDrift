@@ -11,6 +11,34 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 200, headers: CORS_HEADERS });
 }
 
+const TOOLS_LIST = [
+  {
+    name: "get_race_status",
+    description: "Get the current real-time status of a race",
+    inputSchema: { type: "object", properties: { raceId: { type: "string" } }, required: ["raceId"] }
+  },
+  {
+    name: "start_race",
+    description: "Start a new race on a given track",
+    inputSchema: { type: "object", properties: { trackId: { type: "string" } }, required: ["trackId"] }
+  },
+  {
+    name: "get_leaderboard",
+    description: "Get the top leaderboard by limit",
+    inputSchema: { type: "object", properties: { limit: { type: "number" } }, required: ["limit"] }
+  },
+  {
+    name: "optimize_speed",
+    description: "Optimize the current speed profile",
+    inputSchema: { type: "object", properties: { tactic: { type: "string" } } }
+  },
+  {
+    name: "get_track_info",
+    description: "Fetch track conditions and data",
+    inputSchema: { type: "object", properties: { trackId: { type: "string" } }, required: ["trackId"] }
+  }
+];
+
 export async function GET() {
   return NextResponse.json({
     protocol: "MCP",
@@ -19,6 +47,9 @@ export async function GET() {
     status: "active",
     description: "Active MCP server for Farcast Drift Orchestrator Agent",
     capabilities: { tools: {}, prompts: {}, resources: {} },
+    tools: TOOLS_LIST,
+    prompts: [],
+    resources: [],
     timestamp: new Date().toISOString()
   }, { headers: CORS_HEADERS });
 }
@@ -28,6 +59,7 @@ export async function POST(req: Request) {
     const rawText = await req.text();
     const body = rawText ? JSON.parse(rawText) : {};
     const method = body.method || body.action || body.command || "status";
+    const isJsonRpc = body.jsonrpc === "2.0";
 
     let result: any = {};
 
@@ -41,35 +73,7 @@ export async function POST(req: Request) {
         break;
 
       case "tools/list":
-        result = {
-          tools: [
-            {
-              name: "get_race_status",
-              description: "Get the current real-time status of a race",
-              inputSchema: { type: "object", properties: { raceId: { type: "string" } }, required: ["raceId"] }
-            },
-            {
-              name: "start_race",
-              description: "Start a new race on a given track",
-              inputSchema: { type: "object", properties: { trackId: { type: "string" } }, required: ["trackId"] }
-            },
-            {
-              name: "get_leaderboard",
-              description: "Get the top leaderboard by limit",
-              inputSchema: { type: "object", properties: { limit: { type: "number" } }, required: ["limit"] }
-            },
-            {
-              name: "optimize_speed",
-              description: "Optimize the current speed profile",
-              inputSchema: { type: "object", properties: { tactic: { type: "string" } } }
-            },
-            {
-              name: "get_track_info",
-              description: "Fetch track conditions and data",
-              inputSchema: { type: "object", properties: { trackId: { type: "string" } }, required: ["trackId"] }
-            }
-          ]
-        };
+        result = { tools: TOOLS_LIST };
         break;
 
       case "tools/call":
@@ -115,7 +119,11 @@ export async function POST(req: Request) {
         };
     }
 
-    return NextResponse.json(result, { headers: CORS_HEADERS });
+    const finalResponse = isJsonRpc 
+      ? { jsonrpc: "2.0", id: body.id, result }
+      : result;
+
+    return NextResponse.json(finalResponse, { headers: CORS_HEADERS });
 
   } catch (error) {
     return NextResponse.json(

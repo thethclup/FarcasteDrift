@@ -30,6 +30,34 @@ async function startServer() {
     });
   });
 
+  const TOOLS_LIST = [
+    {
+      name: "get_race_status",
+      description: "Get the current real-time status of a race",
+      inputSchema: { type: "object", properties: { raceId: { type: "string" } }, required: ["raceId"] }
+    },
+    {
+      name: "start_race",
+      description: "Start a new race on a given track",
+      inputSchema: { type: "object", properties: { trackId: { type: "string" } }, required: ["trackId"] }
+    },
+    {
+      name: "get_leaderboard",
+      description: "Get the top leaderboard by limit",
+      inputSchema: { type: "object", properties: { limit: { type: "number" } }, required: ["limit"] }
+    },
+    {
+      name: "optimize_speed",
+      description: "Optimize the current speed profile",
+      inputSchema: { type: "object", properties: { tactic: { type: "string" } } }
+    },
+    {
+      name: "get_track_info",
+      description: "Fetch track conditions and data",
+      inputSchema: { type: "object", properties: { trackId: { type: "string" } }, required: ["trackId"] }
+    }
+  ];
+
   // API Route: MCP GET
   app.get("/api/mcp", (req, res) => {
     res.json({
@@ -39,6 +67,9 @@ async function startServer() {
       status: "active",
       description: "Active MCP server for Farcast Drift Orchestrator Agent",
       capabilities: { tools: {}, prompts: {}, resources: {} },
+      tools: TOOLS_LIST,
+      prompts: [],
+      resources: [],
       timestamp: new Date().toISOString()
     });
   });
@@ -48,6 +79,7 @@ async function startServer() {
     try {
       const body = req.body;
       const method = body.method || body.action || body.command;
+      const isJsonRpc = body.jsonrpc === "2.0";
 
       let result: any = {};
 
@@ -61,35 +93,7 @@ async function startServer() {
           break;
 
         case "tools/list":
-          result = {
-            tools: [
-              {
-                name: "get_race_status",
-                description: "Get the current real-time status of a race",
-                inputSchema: { type: "object", properties: { raceId: { type: "string" } }, required: ["raceId"] }
-              },
-              {
-                name: "start_race",
-                description: "Start a new race on a given track",
-                inputSchema: { type: "object", properties: { trackId: { type: "string" } }, required: ["trackId"] }
-              },
-              {
-                name: "get_leaderboard",
-                description: "Get the top leaderboard by limit",
-                inputSchema: { type: "object", properties: { limit: { type: "number" } }, required: ["limit"] }
-              },
-              {
-                name: "optimize_speed",
-                description: "Optimize the current speed profile",
-                inputSchema: { type: "object", properties: { tactic: { type: "string" } } }
-              },
-              {
-                name: "get_track_info",
-                description: "Fetch track conditions and data",
-                inputSchema: { type: "object", properties: { trackId: { type: "string" } }, required: ["trackId"] }
-              }
-            ]
-          };
+          result = { tools: TOOLS_LIST };
           break;
 
         case "tools/call":
@@ -136,7 +140,11 @@ async function startServer() {
           };
       }
 
-      res.json(result);
+      const finalResponse = isJsonRpc 
+        ? { jsonrpc: "2.0", id: body.id, result }
+        : result;
+
+      res.json(finalResponse);
 
     } catch (error) {
       res.status(400).json({
