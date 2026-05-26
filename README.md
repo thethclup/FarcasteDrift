@@ -28,11 +28,25 @@ The AI Agent exposes an active MCP endpoint to execute tools and orchestrate int
   - `optimize_speed`: Engage deep performance tuning profiles.
   - `get_track_info`: Query condition data for specific grids.
 
-## Getting Started Locally
-1. Clone this repository.
-2. Install dependencies: `npm install`
-3. Configure your local runtime environment (copy `.env.example` -> `.env`)
-4. Start the development server: `npm run dev`
-5. Access the Farcaster App at localhost.
+## How to Run Locally
 
-*(Note: Never commit sensitive details, wallet keys, or API credentials to version control. Use standard environment variable practices.)*
+First, clone this repository and navigate into the source directory.
+
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Environment Variables:**
+   Copy the sample environment file and fill it out if necessary (do not commit secrets).
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Start Development Server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Verify MCP Endpoint (Serverless):**
+   When deploying, the MCP endpoint will be available at `/api/mcp`.

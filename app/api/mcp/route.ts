@@ -1,6 +1,16 @@
 // @ts-nocheck
 import { NextResponse } from 'next/server';
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: CORS_HEADERS });
+}
+
 export async function GET() {
   return NextResponse.json({
     protocol: "MCP",
@@ -10,19 +20,14 @@ export async function GET() {
     description: "Active MCP server for Farcast Drift Orchestrator Agent",
     capabilities: { tools: {}, prompts: {}, resources: {} },
     timestamp: new Date().toISOString()
-  }, {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    }
-  });
+  }, { headers: CORS_HEADERS });
 }
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const method = body.method || body.action || body.command;
+    const rawText = await req.text();
+    const body = rawText ? JSON.parse(rawText) : {};
+    const method = body.method || body.action || body.command || "status";
 
     let result: any = {};
 
@@ -110,26 +115,12 @@ export async function POST(req: Request) {
         };
     }
 
-    return NextResponse.json(result, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      }
-    });
+    return NextResponse.json(result, { headers: CORS_HEADERS });
 
   } catch (error) {
-    return NextResponse.json({ status: "error", message: "Failed to process MCP request" }, { status: 400 });
+    return NextResponse.json(
+      { status: "error", message: "Failed to process MCP request" }, 
+      { status: 400, headers: CORS_HEADERS }
+    );
   }
-}
-
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    }
-  });
 }
