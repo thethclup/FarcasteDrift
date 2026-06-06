@@ -24,7 +24,9 @@ export async function submitScoreTx(score: number, distance: number, wallet: str
 }
 
 export async function sayGMTx() {
-  const tx = await buildAttributedTransaction('0xGMContract', '0xGM123');
+  const contractAddress = '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3';
+  const tx = await buildAttributedTransaction(contractAddress, '0xGM123');
+  console.log(`Sending GM via transaction matching contract: ${contractAddress}`);
   return new Promise<string>((resolve) => {
     setTimeout(() => {
       resolve('0x' + Math.random().toString(16).slice(2, 64).padEnd(64, '0'));

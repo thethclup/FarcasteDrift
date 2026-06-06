@@ -1,5 +1,5 @@
 export const ATTRIBUTION_CODE = '[ATTRIBUTION_CODE]';
-export const BUILDER_CODE = 'bc_0cwap6co';
+export const BUILDER_CODE = '[BUILDER_CODE]';
 
 /**
  * ERC-8021 Transaction Attribution

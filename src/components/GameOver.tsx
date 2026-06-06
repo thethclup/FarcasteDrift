@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Trophy, RefreshCcw, Share2, Award, Zap, Heart, Navigation2 } from 'lucide-react';
+import { Trophy, RefreshCcw, Share2, Award, Zap, Heart, Navigation2, Sun } from 'lucide-react';
 import { submitScoreTx } from '../lib/web3';
 
 interface GameOverProps {
@@ -74,6 +74,19 @@ export const GameOver: React.FC<GameOverProps> = ({ score, distance, likes, wall
 
         {/* Action Buttons */}
         <div className="w-full space-y-4 mt-6">
+           <button 
+             onClick={async () => {
+               if (!wallet) return;
+               const { sayGMTx } = await import('../lib/web3');
+               const hash = await sayGMTx();
+               alert(`GM sent successfully on-chain! Tx: ${hash}`);
+             }} 
+             className="w-full px-3 py-4 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center justify-center gap-2 font-['Cinzel'] text-sm font-bold shadow-[0_0_15px_rgba(232,160,32,0.2)]"
+           >
+             <Sun className="w-5 h-5" />
+             Say GM
+           </button>
+           
            {txHash ? (
                <div className="bg-[#00FF00]/10 neon-border border-[#00FF00] text-[#00FF00] p-4 text-center font-mono text-xs mb-4 uppercase tracking-widest">
                   Successfully minted on Base<br/>
@@ -91,7 +104,7 @@ export const GameOver: React.FC<GameOverProps> = ({ score, distance, likes, wall
                         <span className="animate-pulse flex items-center gap-2 text-[#00FF00] font-bold uppercase tracking-widest text-sm"><Zap className="w-5 h-5"/> Signing SIWE...</span>
                     ) : (
                         <span className="text-lg font-black uppercase tracking-widest text-[#00FF00] flex items-center gap-2">
-                           <Award className="w-5 h-5" /> Record Run On-Chain
+                           <Award className="w-5 h-5" /> Record This Run on-chain
                         </span>
                     )}
                   </div>
