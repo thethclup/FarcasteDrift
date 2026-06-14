@@ -1,21 +1,29 @@
 export const ATTRIBUTION_CODE = '[ATTRIBUTION_CODE]';
 export const BUILDER_CODE = '[BUILDER_CODE]';
 
+// A generic example suffix (version 0x07 + ASCII 'baseapp' + 8021 padding)
+// IMPORTANT: Replace this with the exact encoded suffix from base.dev 
+// -> Settings -> Builder Code.
+export const BUILDER_SUFFIX = '0x07626173656170700080218021802180218021802180218021';
+
 /**
  * ERC-8021 Transaction Attribution
  * https://eips.ethereum.org/EIPS/eip-8021
- * Simulated utilities for attributing on-chain interactions to builders.
+ * Appends the standard builder suffix to transaction calldata.
  */
-export async function buildAttributedTransaction(targetContract: string, data: string) {
-  console.log(`Building ERC-8021 Tx -> Target: ${targetContract}`);
-  console.log(`Attribution Code: ${ATTRIBUTION_CODE}`);
-  console.log(`Builder Code: ${BUILDER_CODE}`);
+export function buildAttributedTransactionData(calldata: string): string {
+  // Concat standard fallback if standard 0x prefixed hex
+  const cleanCallData = calldata.startsWith('0x') ? calldata : `0x${calldata}`;
+  const cleanSuffix = BUILDER_SUFFIX.startsWith('0x') ? BUILDER_SUFFIX.slice(2) : BUILDER_SUFFIX;
   
-  // Real implementation would inject builder payload to tx calldata or headers depending on standard
+  return `${cleanCallData}${cleanSuffix}`;
+}
+
+export function getCapabilities() {
   return {
-    to: targetContract,
-    data: data,
-    attribution: ATTRIBUTION_CODE,
-    builder: BUILDER_CODE,
+    dataSuffix: {
+      value: BUILDER_SUFFIX,
+      optional: true,
+    }
   };
 }

@@ -74,6 +74,20 @@ async function startServer() {
     });
   });
 
+  // === Coinbase AgentKit Base MCP Integration ===
+  // Prerequisites: npm install && Setup CDP env vars
+  // 
+  // import { initializeAgent } from "./src/lib/agentkit";
+  //
+  // app.post("/api/base-mcp", async (req, res) => {
+  //   try {
+  //      const agentKit = await initializeAgent();
+  //      res.json({ status: "AgentKit active", agent: agentKit });
+  //   } catch(e) {
+  //      res.status(500).json({ error: "AgentKit setup failed" });
+  //   }
+  // });
+
   // API Route: MCP POST (Fully Implemented for Standard Schema)
   app.post("/api/mcp", (req, res) => {
     try {

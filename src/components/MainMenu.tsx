@@ -1,41 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Play, Trophy, Wrench, Fingerprint, Coins, MessageSquare } from 'lucide-react';
-import { connectWalletMock, sayGMTx } from '../lib/web3';
-import { ATTRIBUTION_CODE, BUILDER_CODE } from '../lib/erc8021';
+import { useAccount, useConnect, useDisconnect, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { injected } from 'wagmi/connectors';
+import { ATTRIBUTION_CODE, BUILDER_CODE, buildAttributedTransactionData } from '../lib/erc8021';
 
 interface MainMenuProps {
   onStart: () => void;
   wallet: string | null;
-  setWallet: (addr: string) => void;
+  setWallet: (addr: string | null) => void;
 }
 
 export const MainMenu: React.FC<MainMenuProps> = ({ onStart, wallet, setWallet }) => {
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isSayingGM, setIsSayingGM] = useState(false);
+  const { address, isConnected } = useAccount();
+  const { connect, isPending: isConnecting } = useConnect();
+  const { disconnect } = useDisconnect();
 
-  const handleConnect = async () => {
-    setIsConnecting(true);
-    try {
-      const addr = await connectWalletMock();
-      setWallet(addr);
-    } finally {
-      setIsConnecting(false);
+  const { sendTransaction, data: hash, isPending: isSayingGM } = useSendTransaction();
+  const { isLoading: isWaitingForReceipt, isSuccess: isGMSuccess } = useWaitForTransactionReceipt({
+    hash: hash,
+  });
+
+  // Sync wagmi connection state with parent component
+  useEffect(() => {
+    if (isConnected && address) {
+      setWallet(address);
+    } else {
+      setWallet(null);
     }
+  }, [isConnected, address, setWallet]);
+
+  useEffect(() => {
+    if (isGMSuccess && hash) {
+      alert(`GM said successfully on Base!\nTx: ${hash.slice(0, 10)}...${hash.slice(-8)}`);
+    }
+  }, [isGMSuccess, hash]);
+
+  const handleConnect = () => {
+    connect({ connector: injected() });
   };
 
-  const handleSayGM = async () => {
+  const handleSayGM = () => {
     if (!wallet) return;
-    setIsSayingGM(true);
-    try {
-      const txHash = await sayGMTx();
-      alert(`GM said successfully on Base!\nTx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`);
-    } catch (e) {
-      console.error(e);
-      alert('Failed to say GM.');
-    } finally {
-      setIsSayingGM(false);
-    }
+    
+    const attributedCalldata = buildAttributedTransactionData('0x') as `0x${string}`;
+    
+    sendTransaction({
+      to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3', // Target GM contract
+      data: attributedCalldata,
+    });
   };
 
   return (
@@ -114,9 +127,9 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart, wallet, setWallet }
             </div>
           </button>
 
-          {!wallet ? (
+          {!isConnected ? (
             <button 
-              onClick={handleConnect}
+              onClick={() => handleConnect()}
               disabled={isConnecting}
               className="flex items-center justify-center gap-3 w-full bg-white/5 hover:bg-white/10 text-white font-bold py-5 border-2 border-white/10 hover:border-white/40 transition-colors uppercase tracking-widest text-sm"
             >
@@ -130,9 +143,12 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart, wallet, setWallet }
               )}
             </button>
           ) : (
-            <div className="flex items-center justify-center gap-2 text-[#00FF00] font-mono text-xs uppercase py-3 bg-black/60 neon-border">
-               <Coins className="w-4 h-4" /> Connected: {wallet.slice(0, 6)}...{wallet.slice(-4)}
-            </div>
+            <button 
+              onClick={() => disconnect()}
+              className="flex items-center justify-center gap-2 text-[#00FF00] font-mono text-xs uppercase py-3 bg-black/60 neon-border hover:bg-black/80 transition-colors"
+            >
+               <Coins className="w-4 h-4" /> Connected: {address?.slice(0, 6)}...{address?.slice(-4)} (Disconnect)
+            </button>
           )}
 
           <div className="flex gap-4 w-full">
@@ -144,14 +160,14 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart, wallet, setWallet }
                <Wrench className="w-5 h-5 text-white" />
                <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider">Garage</span>
              </button>
-             {wallet ? (
+             {isConnected ? (
                 <button 
                   onClick={handleSayGM}
-                  disabled={isSayingGM}
+                  disabled={isSayingGM || isWaitingForReceipt}
                   className="flex-1 flex flex-col items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white py-4 border-2 border-white/10 hover:border-white/40 transition-colors"
                 >
                   <MessageSquare className="w-5 h-5 text-[#FF00FF]" />
-                  <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider">{isSayingGM ? '...' : 'SAY GM'}</span>
+                  <span className="text-[10px] md:text-xs uppercase font-bold tracking-wider">{isSayingGM || isWaitingForReceipt ? '...' : 'SAY GM'}</span>
                 </button>
              ) : (
                 <button disabled className="opacity-50 cursor-not-allowed flex-1 flex flex-col items-center justify-center gap-2 bg-white/5 text-white py-4 border-2 border-white/10 transition-colors">

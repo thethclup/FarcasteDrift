@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Trophy, RefreshCcw, Share2, Award, Zap, Heart, Navigation2, Sun } from 'lucide-react';
-import { submitScoreTx } from '../lib/web3';
+import { useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
+import { buildAttributedTransactionData } from '../lib/erc8021';
+import { toHex } from 'viem';
 
 interface GameOverProps {
   score: number;
@@ -13,27 +15,46 @@ interface GameOverProps {
 }
 
 export const GameOver: React.FC<GameOverProps> = ({ score, distance, likes, wallet, onRestart, onHome }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
+  const { sendTransaction: sendScore, data: scoreHash, isPending: isScorePending } = useSendTransaction();
+  const { sendTransaction: sendGM, data: gmHash, isPending: isGMPending } = useSendTransaction();
 
-  const handleSubmitScore = async () => {
+  const { isLoading: isWaitingForScore, isSuccess: isScoreSuccess } = useWaitForTransactionReceipt({ hash: scoreHash });
+  const { isLoading: isWaitingForGM, isSuccess: isGMSuccess } = useWaitForTransactionReceipt({ hash: gmHash });
+
+  useEffect(() => {
+    if (isGMSuccess && gmHash) {
+      alert(`GM sent successfully on-chain! Tx: ${gmHash}`);
+    }
+  }, [isGMSuccess, gmHash]);
+
+  const handleSubmitScore = () => {
     if (!wallet) {
       alert("Please connect wallet on home screen first to submit on-chain.");
       onHome();
       return;
     }
     
-    setIsSubmitting(true);
-    try {
-      const res = await submitScoreTx(score, distance, wallet);
-      setTxHash(res.hash);
-    } catch (e) {
-      console.error(e);
-      alert('Failed to submit score.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Create an arbitrary payload for the score to log it on-chain with builder suffix
+    const scorePayload = toHex(`score:${score},dist:${distance.toFixed(1)}`);
+    const attributedCalldata = buildAttributedTransactionData(scorePayload) as `0x${string}`;
+    
+    sendScore({
+      to: wallet as `0x${string}`, // Self-send to log the data
+      data: attributedCalldata,
+    });
   };
+
+  const handleSayGM = () => {
+    if (!wallet) return;
+    const attributedCalldata = buildAttributedTransactionData('0x') as `0x${string}`;
+    sendGM({
+      to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3', // GM Contract
+      data: attributedCalldata,
+    });
+  };
+
+  const isSubmittingScore = isScorePending || isWaitingForScore;
+  const isSubmittingGM = isGMPending || isWaitingForGM;
 
   return (
     <motion.div 
@@ -75,33 +96,29 @@ export const GameOver: React.FC<GameOverProps> = ({ score, distance, likes, wall
         {/* Action Buttons */}
         <div className="w-full space-y-4 mt-6">
            <button 
-             onClick={async () => {
-               if (!wallet) return;
-               const { sayGMTx } = await import('../lib/web3');
-               const hash = await sayGMTx();
-               alert(`GM sent successfully on-chain! Tx: ${hash}`);
-             }} 
-             className="w-full px-3 py-4 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center justify-center gap-2 font-['Cinzel'] text-sm font-bold shadow-[0_0_15px_rgba(232,160,32,0.2)]"
+             onClick={handleSayGM}
+             disabled={isSubmittingGM}
+             className="w-full px-3 py-4 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center justify-center gap-2 font-['Cinzel'] text-sm font-bold shadow-[0_0_15px_rgba(232,160,32,0.2)] disabled:opacity-50"
            >
              <Sun className="w-5 h-5" />
-             Say GM
+             {isSubmittingGM ? 'Saying GM...' : 'Say GM'}
            </button>
            
-           {txHash ? (
+           {scoreHash && isScoreSuccess ? (
                <div className="bg-[#00FF00]/10 neon-border border-[#00FF00] text-[#00FF00] p-4 text-center font-mono text-xs mb-4 uppercase tracking-widest">
                   Successfully minted on Base<br/>
-                  <span className="opacity-70 mt-1 block">Tx: {txHash.slice(0,10)}...{txHash.slice(-8)}</span>
+                  <span className="opacity-70 mt-1 block">Tx: {scoreHash.slice(0,10)}...{scoreHash.slice(-8)}</span>
                </div>
            ) : (
                <button 
                   onClick={handleSubmitScore}
-                  disabled={isSubmitting}
-                  className="group relative w-full overflow-hidden focus:outline-none"
+                  disabled={isSubmittingScore}
+                  className="group relative w-full overflow-hidden focus:outline-none disabled:opacity-50"
                >
                   <div className="absolute -inset-1 bg-gradient-to-r from-[#00FF00] to-[#FF00FF] blur opacity-40 group-hover:opacity-100 transition duration-500"></div>
                   <div className="relative bg-black px-12 py-5 border-2 border-[#00FF00]/50 flex items-center justify-center gap-3 transition-all group-hover:bg-opacity-80">
-                    {isSubmitting ? (
-                        <span className="animate-pulse flex items-center gap-2 text-[#00FF00] font-bold uppercase tracking-widest text-sm"><Zap className="w-5 h-5"/> Signing SIWE...</span>
+                    {isSubmittingScore ? (
+                        <span className="animate-pulse flex items-center gap-2 text-[#00FF00] font-bold uppercase tracking-widest text-sm"><Zap className="w-5 h-5"/> Submitting...</span>
                     ) : (
                         <span className="text-lg font-black uppercase tracking-widest text-[#00FF00] flex items-center gap-2">
                            <Award className="w-5 h-5" /> Record This Run on-chain
