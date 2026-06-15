@@ -24,11 +24,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart, wallet, setWallet }
   // Sync wagmi connection state with parent component
   useEffect(() => {
     if (isConnected && address) {
-      setWallet(address);
+      if (wallet !== address) setWallet(address);
     } else {
-      setWallet(null);
+      if (wallet !== null) setWallet(null);
     }
-  }, [isConnected, address, setWallet]);
+  }, [isConnected, address, setWallet, wallet]);
 
   useEffect(() => {
     if (isGMSuccess && hash) {

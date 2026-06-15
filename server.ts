@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
+import { initializeAgent } from "./src/lib/agentkit";
 
 async function startServer() {
   const app = express();
@@ -76,17 +77,15 @@ async function startServer() {
 
   // === Coinbase AgentKit Base MCP Integration ===
   // Prerequisites: npm install && Setup CDP env vars
-  // 
-  // import { initializeAgent } from "./src/lib/agentkit";
-  //
-  // app.post("/api/base-mcp", async (req, res) => {
-  //   try {
-  //      const agentKit = await initializeAgent();
-  //      res.json({ status: "AgentKit active", agent: agentKit });
-  //   } catch(e) {
-  //      res.status(500).json({ error: "AgentKit setup failed" });
-  //   }
-  // });
+
+  app.post("/api/base-mcp", async (req, res) => {
+    try {
+       const agentKit = await initializeAgent();
+       res.json({ status: "AgentKit active", capabilities: ["wallet", "send", "pyth", "erc20"] });
+    } catch(e: any) {
+       res.status(500).json({ error: "AgentKit setup failed", details: e.message });
+    }
+  });
 
   // API Route: MCP POST (Fully Implemented for Standard Schema)
   app.post("/api/mcp", (req, res) => {

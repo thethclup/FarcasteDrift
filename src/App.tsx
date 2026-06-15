@@ -30,16 +30,16 @@ export default function App() {
     }
   }, [isGMSuccess, hash]);
 
-  const handleStartGame = () => {
+  const handleStartGame = React.useCallback(() => {
     setStats({ score: 0, distance: 0, likes: 0, hype: 0, combo: 0 });
     setGameState('PLAYING');
-  };
+  }, []);
 
-  const handleGameOver = (score: number, distance: number, likes: number) => {
+  const handleGameOver = React.useCallback((score: number, distance: number, likes: number) => {
     // Preserve final stats
     setStats(prev => ({ ...prev, score, distance, likes }));
     setGameState('GAME_OVER');
-  };
+  }, []);
 
   const sendGMTransaction = () => {
     if (!wallet) return;

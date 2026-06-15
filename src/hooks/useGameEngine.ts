@@ -352,5 +352,5 @@ export function useGameEngine(
     };
   }, [gameState, onGameOver, canvasRef]);
 
-  return { score, distance, likes, hype, combo };
+  return React.useMemo(() => ({ score, distance, likes, hype, combo }), [score, distance, likes, hype, combo]);
 }
