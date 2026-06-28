@@ -18,6 +18,7 @@ export function useGameEngine(
 
     let animationFrameId: number;
     let lastTime = performance.now();
+    let lastUiUpdateTime = performance.now();
 
     // Game state vars
     let gameSpeed = 300; // pixels per second
@@ -321,7 +322,7 @@ export function useGameEngine(
       ctx.restore();
 
       // UI Updates (throttled to 10 FPS to prevent React render saturation)
-      if (Math.floor(time / 100) > Math.floor(lastTime / 100)) {
+      if (time - lastUiUpdateTime > 100) {
          onUpdateStats({
            score: Math.floor(currentScore),
            distance: currentDistance,
@@ -329,6 +330,7 @@ export function useGameEngine(
            likes: currentLikes,
            combo: Math.floor(currentCombo)
          });
+         lastUiUpdateTime = time;
       }
 
       animationFrameId = requestAnimationFrame(gameLoop);
