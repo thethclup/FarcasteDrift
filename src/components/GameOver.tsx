@@ -4,6 +4,7 @@ import { Trophy, RefreshCcw, Share2, Award, Zap, Heart, Navigation2, Sun } from 
 import { useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import { buildAttributedTransactionData } from '../lib/erc8021';
 import { toHex } from 'viem';
+import { GM_REGISTRY, SCORE_REGISTRY } from '../constants';
 
 interface GameOverProps {
   score: number;
@@ -39,7 +40,7 @@ export const GameOver: React.FC<GameOverProps> = ({ score, distance, likes, wall
     const attributedCalldata = buildAttributedTransactionData(scorePayload) as `0x${string}`;
     
     sendScore({
-      to: wallet as `0x${string}`, // Self-send to log the data
+      to: SCORE_REGISTRY as `0x${string}`, // Target Score Registry contract
       data: attributedCalldata,
     });
   };
@@ -48,7 +49,7 @@ export const GameOver: React.FC<GameOverProps> = ({ score, distance, likes, wall
     if (!wallet) return;
     const attributedCalldata = buildAttributedTransactionData('0x') as `0x${string}`;
     sendGM({
-      to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3', // GM Contract
+      to: GM_REGISTRY as `0x${string}`, // GM Contract
       data: attributedCalldata,
     });
   };

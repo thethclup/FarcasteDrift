@@ -10,14 +10,7 @@ interface GameCanvasProps {
 export const GameCanvas: React.FC<GameCanvasProps> = ({ gameState, onGameOver, onUpdateStats }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
-  const stats = useGameEngine(canvasRef, gameState, onGameOver);
-
-  // Sync stats to parent for HUD
-  useEffect(() => {
-    if (gameState === 'PLAYING') {
-      onUpdateStats(stats);
-    }
-  }, [stats, gameState, onUpdateStats]);
+  useGameEngine(canvasRef, gameState, onGameOver, onUpdateStats);
 
   // Handle Resize
   useEffect(() => {

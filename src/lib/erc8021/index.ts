@@ -1,10 +1,10 @@
-export const ATTRIBUTION_CODE = '[ATTRIBUTION_CODE]';
-export const BUILDER_CODE = '[BUILDER_CODE]';
+import { encodeBuilderCodeSuffix } from '@x402/extensions/builder-code';
 
-// A generic example suffix (version 0x07 + ASCII 'baseapp' + 8021 padding)
-// IMPORTANT: Replace this with the exact encoded suffix from base.dev 
-// -> Settings -> Builder Code.
-export const BUILDER_SUFFIX = '0x07626173656170700080218021802180218021802180218021';
+export const ATTRIBUTION_CODE = '[ATTRIBUTION_CODE]';
+export const BUILDER_CODE = 'my_drift_app'; // Example builder code
+
+// Generate the ERC-8021 Schema 2 suffix using the official x402 extension
+export const BUILDER_SUFFIX = encodeBuilderCodeSuffix({ a: BUILDER_CODE, w: 'cdp_facil' });
 
 /**
  * ERC-8021 Transaction Attribution

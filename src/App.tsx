@@ -8,6 +8,8 @@ import { Sun } from 'lucide-react';
 import { useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import { buildAttributedTransactionData } from './lib/erc8021';
 
+import { GM_REGISTRY } from './constants';
+
 export default function App() {
   const [gameState, setGameState] = useState<GameState>('MENU');
   const [wallet, setWallet] = useState<string | null>(null);
@@ -45,7 +47,7 @@ export default function App() {
     if (!wallet) return;
     const attributedCalldata = buildAttributedTransactionData('0x') as `0x${string}`;
     sendTransaction({
-      to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
+      to: GM_REGISTRY as `0x${string}`,
       data: attributedCalldata,
     });
   };

@@ -4,6 +4,7 @@ import { Play, Trophy, Wrench, Fingerprint, Coins, MessageSquare } from 'lucide-
 import { useAccount, useConnect, useDisconnect, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import { ATTRIBUTION_CODE, BUILDER_CODE, buildAttributedTransactionData } from '../lib/erc8021';
+import { GM_REGISTRY } from '../constants';
 
 interface MainMenuProps {
   onStart: () => void;
@@ -46,7 +47,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ onStart, wallet, setWallet }
     const attributedCalldata = buildAttributedTransactionData('0x') as `0x${string}`;
     
     sendTransaction({
-      to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3', // Target GM contract
+      to: GM_REGISTRY as `0x${string}`, // Target GM contract
       data: attributedCalldata,
     });
   };

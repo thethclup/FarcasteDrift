@@ -6,14 +6,9 @@ import React, { useState, useEffect } from 'react';
 export function useGameEngine(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
   gameState: 'MENU' | 'PLAYING' | 'GAME_OVER' | 'GARAGE' | 'LEADERBOARD',
-  onGameOver: (score: number, distance: number, likes: number) => void
+  onGameOver: (score: number, distance: number, likes: number) => void,
+  onUpdateStats: (stats: { score: number, distance: number, likes: number, hype: number, combo: number }) => void
 ) {
-  const [score, setScore] = useState(0);
-  const [distance, setDistance] = useState(0);
-  const [likes, setLikes] = useState(0);
-  const [hype, setHype] = useState(0);
-  const [combo, setCombo] = useState(0);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || gameState !== 'PLAYING') return;
@@ -82,7 +77,6 @@ export function useGameEngine(
       if (currentCombo > 0) {
           currentScore += currentCombo * 10;
           currentCombo = 0;
-          setCombo(0);
       }
     };
 
@@ -98,7 +92,6 @@ export function useGameEngine(
          if (currentCombo > 0) {
             currentScore += currentCombo * 10;
             currentCombo = 0;
-            setCombo(0);
         }
       }
     };
@@ -327,12 +320,16 @@ export function useGameEngine(
 
       ctx.restore();
 
-      // UI Updates
-      setScore(Math.floor(currentScore));
-      setDistance(currentDistance);
-      setHype(currentHype);
-      setLikes(currentLikes);
-      setCombo(Math.floor(currentCombo));
+      // UI Updates (throttled to 10 FPS to prevent React render saturation)
+      if (Math.floor(time / 100) > Math.floor(lastTime / 100)) {
+         onUpdateStats({
+           score: Math.floor(currentScore),
+           distance: currentDistance,
+           hype: currentHype,
+           likes: currentLikes,
+           combo: Math.floor(currentCombo)
+         });
+      }
 
       animationFrameId = requestAnimationFrame(gameLoop);
     };
@@ -350,7 +347,5 @@ export function useGameEngine(
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameState, onGameOver, canvasRef]);
-
-  return React.useMemo(() => ({ score, distance, likes, hype, combo }), [score, distance, likes, hype, combo]);
+  }, [gameState, onGameOver, canvasRef, onUpdateStats]);
 }
